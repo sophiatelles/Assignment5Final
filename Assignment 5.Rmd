@@ -1,0 +1,103 @@
+---
+title: "Assignment 5"
+author: "Sophia Telles & Samantha Driscoll"
+date: "October 3, 2017"
+output: html_document
+---
+
+```{r setup, include=FALSE}
+knitr::opts_chunk$set(echo = TRUE)
+```
+```{r}
+library(readxl)
+tallb=read_excel("tallestbuildings.xlsx")
+```
+Need to make sure that files are in same session
+```{r}
+library(ggplot2)
+library(dplyr)
+library(tidyr)
+```
+
+```{r}
+head(tallb)
+```
+
+# 1 Display how many buildings there are in each city. Arrange the data in descending order of number of buildings.
+```{r}
+citycounts=tallb%>%group_by(City)%>%summarize(number=length(City))
+citycounts
+```
+
+
+```{r}
+ggplot(citycounts,aes(reorder(City,number),number))+geom_bar(stat="identity")+coord_flip()+xlab("City")
+```
+
+
+# 2. Plot different cities in order of the mean height of buildings
+
+```{r}
+meanb=tallb%>%group_by(City)%>%summarize(number=mean(`Height (ft)`))
+meanb
+```
+
+```{r}
+ggplot(meanb,aes(reorder(City,number),number))+geom_bar(stat="identity")+coord_flip()+xlab("City")+ylab("Mean Height (ft)")
+```
+
+
+# 3. Plot how many buildings are in each country
+```{r}
+Country=separate(data = tallb,col=City, into =c("City","Country"), sep ="\\(")
+CCountry=separate(data = Country,col=Country, into =c("Country",NA), sep ="\\)")
+CCountry
+```
+
+```{r}
+library(countrycode)
+CCountry$CountryName=countrycode(CCountry$Country,"iso2c", "country.name")
+CCountry=CCountry[,-5]
+```
+
+
+
+```{r}
+countrycounts=CCountry%>%group_by(CountryName)%>%summarize(number=length(CountryName))
+ggplot(countrycounts,aes(reorder(CountryName,number),number))+geom_bar(stat="identity")+coord_flip()+xlab("Country Name")
+```
+
+# 4. Plot different cities based on mean height of buildings 
+```{r}
+meanc=CCountry%>%group_by(CountryName)%>%summarize(Mean =mean(`Height (ft)`))
+meanc
+```
+
+
+
+```{r}
+ggplot(meanc,aes(reorder(CountryName,Mean),Mean))+coord_flip()+geom_bar(stat="identity")+xlab("Country")
+
+```
+
+# 5. Color the bars in a graph that is based on the number of buildings in each country. 
+
+```{r}
+ggplot(countrycounts,aes(reorder(CountryName,number),number,fill=as.factor(CountryName)))+geom_bar(stat="identity",position="dodge")+coord_flip()+xlab("CountryName")
+
+```
+
+# 6. Building purpose and corresponding mean height
+```{r}
+tallb
+uses=tallb%>%group_by(Use)%>%summarize(Mean=mean(`Height (ft)`))
+uses
+```
+
+
+```{r}
+ggplot(uses,aes(reorder(Use,Mean),Mean))+geom_bar(stat="identity",position = "dodge")+coord_flip()+ylab("Mean Height (ft)")+xlab("Use")
+```
+
+
+ 
